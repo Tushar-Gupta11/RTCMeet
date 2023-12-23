@@ -3,7 +3,7 @@
 const https = require("https");
 const express = require("express");
 const exp = require("constants");
-const { WebSocketServer } = require("ws");
+const { WebSocketServer, WebSocket } = require("ws");
 const {uuid} = require("uuid");
 const { isUuid } = require("uuidv4");
 
@@ -31,9 +31,15 @@ wss.on('connection',function connect(ws){
                     elem.iceCandidates.push(mess[0]);
                 }
             }
+
         }else{
             //handle the sdp offer 
             offers.push({offer:mess[0],id:id,iceCandidates:[]});
+            wss.clients.forEach(function broadcast(client){
+                if(client!== ws && client.readyState=== WebSocket.OPEN){
+                    client.send(offers[-1]);
+                }
+            })
         }
 
     });
